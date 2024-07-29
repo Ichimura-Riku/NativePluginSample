@@ -1,3 +1,6 @@
+import org.gradle.internal.impldep.bsh.commands.dir
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     alias(libs.plugins.androidLibrary)
 }
@@ -29,7 +32,9 @@ android {
 }
 
 dependencies {
-
+    compileOnly(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
+    compileOnly(libs.android.gradlePlugin)
+    compileOnly(libs.kotlin.gradlePlugin)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
