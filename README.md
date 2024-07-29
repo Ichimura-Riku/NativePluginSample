@@ -1,0 +1,3 @@
+# NativePluginSample
+
+Unity用にBLEのNativePluginを作る必要があったけどやり方がわからなかったので、プラグイン作成のサンプルを作るっていうリポジトリ
