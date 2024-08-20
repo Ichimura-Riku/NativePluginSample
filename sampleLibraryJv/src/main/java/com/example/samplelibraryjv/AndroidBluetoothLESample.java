@@ -7,11 +7,8 @@ public class AndroidBluetoothLESample {
     public static int sampleFunc(){return 0;}
     public static void staticFunction(){
         Log.d("debug-----","staticFunction" );
-        UnityPlayer.UnitySendMessage("debug-----", "staticFunction", "s2");
+        UnityPlayer.UnitySendMessage("ControllerInfoDisplayUI", "onClickDebug", "static void debug");
     }
 
-    public void noStaticFunction(){
-        Log.d("debug-----", "noStaticFunction");
-        UnityPlayer.UnitySendMessage("debug-----", "noStaticFunction", "s2");
-    }
+
 }
