@@ -36,11 +36,11 @@ public class BluetoothLE {
     private BluetoothDevice device;
 
     static final int REQUEST_CODE = 1;
-    private Context context;
+//    private Context context;
     private Activity activity;
 
     private void checkBluetoothLEPermission() {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{
                     Manifest.permission.CAMERA
             }, REQUEST_CODE);
@@ -48,11 +48,10 @@ public class BluetoothLE {
     }
 
     // 初期化.
-    public void initialize(Context context, Activity activity) {
+    public void initialize() {
         //Bluetoothアダプターを初期化
-        this.context = context;
-        this.activity = activity;
-        BluetoothManager manager = (BluetoothManager) UnityPlayer.currentActivity.getSystemService(Context.BLUETOOTH_SERVICE);
+        activity = UnityPlayer.currentActivity;;
+        BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         adapter = manager.getAdapter();
 
         scanner = adapter.getBluetoothLeScanner();
