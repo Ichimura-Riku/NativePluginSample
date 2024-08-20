@@ -33,7 +33,9 @@ android {
 }
 
 dependencies {
-
+    compileOnly(fileTree(mapOf("include" to listOf("*.jar"), "dir" to "libs")))
+    compileOnly(libs.android.gradlePlugin)
+    compileOnly(libs.kotlin.gradlePlugin)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
