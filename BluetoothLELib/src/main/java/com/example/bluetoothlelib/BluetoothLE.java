@@ -51,7 +51,8 @@ public class BluetoothLE {
     // 初期化.
     public void initialize() {
         //Bluetoothアダプターを初期化
-        activity = UnityPlayer.currentActivity;;
+        unityDebugMessage("start plugin initialize");
+        activity = UnityPlayer.currentActivity;
         BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         adapter = manager.getAdapter();
 
@@ -160,7 +161,7 @@ public class BluetoothLE {
     // Unity側にメッセージ通知.
     private void unitySendMessage(String... params) {
         String param = String.join(",", params);
-        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginMessage", param);
+        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginMessageBU", param);
     }
 
     private void unityDebugMessage(String message){
