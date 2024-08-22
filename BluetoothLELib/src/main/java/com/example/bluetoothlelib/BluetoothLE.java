@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class BluetoothLE {
-//    private static final String RECEIVE_OBJECT_NAME = "BluetoothLEReceiver";
+    //    private static final String RECEIVE_OBJECT_NAME = "BluetoothLEReceiver";
     private static final String RECEIVE_OBJECT_NAME = "ControllerInfoDisplayUI";
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("566fd0bd-0e40-42fa-a0c2-3a54433220f8");
     private BluetoothAdapter adapter;
@@ -37,7 +37,7 @@ public class BluetoothLE {
     private BluetoothDevice device;
 
     static final int REQUEST_CODE = 1;
-//    private Context context;
+    //    private Context context;
     private Activity activity;
 
     private void checkBluetoothLEPermission() {
@@ -63,12 +63,17 @@ public class BluetoothLE {
 
     // スキャン開始.
     public void startScan() {
-        ScanSettings.Builder scanSettings = new ScanSettings.Builder();
-        scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
-        ScanSettings settings = scanSettings.build();
-        // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
-        checkBluetoothLEPermission();
-        scanner.startScan(null, settings, scanCallback);
+        try {
+
+            ScanSettings.Builder scanSettings = new ScanSettings.Builder();
+            scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
+            ScanSettings settings = scanSettings.build();
+            // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
+            checkBluetoothLEPermission();
+            scanner.startScan(null, settings, scanCallback);
+        }catch (Exception e){
+            unityDebugMessage("BluetoothLE.startScan is Failed");
+        }
     }
 
 
@@ -164,7 +169,7 @@ public class BluetoothLE {
         UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginMessageBU", param);
     }
 
-    private void unityDebugMessage(String message){
+    private void unityDebugMessage(String message) {
         UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "OnError", message);
     }
 
