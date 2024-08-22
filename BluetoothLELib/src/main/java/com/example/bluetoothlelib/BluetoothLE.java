@@ -51,14 +51,21 @@ public class BluetoothLE {
     // 初期化.
     public void initialize() {
         //Bluetoothアダプターを初期化
-        unityDebugMessage("start plugin initialize");
-        activity = UnityPlayer.currentActivity;
-        BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-        adapter = manager.getAdapter();
+        try {
 
-        scanner = adapter.getBluetoothLeScanner();
+            unityDebugMessage("start plugin initialize");
+            activity = UnityPlayer.currentActivity;
+            BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+            adapter = manager.getAdapter();
 
-        unitySendMessage("InitializeCallback");
+            scanner = adapter.getBluetoothLeScanner();
+
+            unitySendMessage("InitializeCallback");
+            unityDebugMessage("Finish BluetoothLE.initialize()");
+        }catch(Exception e){
+            unityDebugMessage("BluetoothLE.initialize is Failed");
+            unityDebugMessage(e.toString());
+        }
     }
 
     // スキャン開始.
@@ -71,8 +78,10 @@ public class BluetoothLE {
             // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
             checkBluetoothLEPermission();
             scanner.startScan(null, settings, scanCallback);
-        }catch (Exception e){
-            unityDebugMessage("BluetoothLE.startScan is Failed");
+            unityDebugMessage("Finish BluetoothLE.startScan()");
+        } catch (Exception e) {
+            unityDebugMessage("BluetoothLE.startScan() is Failed");
+            unityDebugMessage(e.toString());
         }
     }
 
@@ -138,7 +147,7 @@ public class BluetoothLE {
                 // 検出したサービスとCharacteristicを通知.
                 for (BluetoothGattService service : gatt.getServices()) {
                     for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                        unitySendMessage("DiscovereCharacteristicCallback", service.getUuid().toString(), characteristic.getUuid().toString());
+                        unitySendMessage("DiscoverCharacteristicCallback", service.getUuid().toString(), characteristic.getUuid().toString());
                     }
                 }
             }
@@ -170,7 +179,7 @@ public class BluetoothLE {
     }
 
     private void unityDebugMessage(String message) {
-        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "OnError", message);
+        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginLog", message);
     }
 
     // メッセージ送信.
