@@ -1,13 +1,9 @@
-import org.gradle.internal.impldep.bsh.commands.dir
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.regex.Pattern.compile
-
 plugins {
     alias(libs.plugins.androidLibrary)
 }
 
 android {
-    namespace = "com.example.samplelibraryjv"
+    namespace = "com.example.bluetoothlelib"
     compileSdk = 34
 
     defaultConfig {
