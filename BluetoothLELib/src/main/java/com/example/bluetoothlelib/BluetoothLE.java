@@ -57,9 +57,7 @@ public class BluetoothLE {
             activity = UnityPlayer.currentActivity;
             BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
             adapter = manager.getAdapter();
-
             scanner = adapter.getBluetoothLeScanner();
-
             unitySendMessage("InitializeCallback");
             unityDebugMessage("Finish BluetoothLE.initialize()");
         }catch(Exception e){
@@ -75,9 +73,12 @@ public class BluetoothLE {
             ScanSettings.Builder scanSettings = new ScanSettings.Builder();
             scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
             ScanSettings settings = scanSettings.build();
-            // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
+            if(activity != null){
+                unityDebugMessage("activity is " + activity);
+            }
+//            // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
             checkBluetoothLEPermission();
-            scanner.startScan(null, settings, scanCallback);
+//            scanner.startScan(null, settings, scanCallback);
             unityDebugMessage("Finish BluetoothLE.startScan()");
         } catch (Exception e) {
             unityDebugMessage("BluetoothLE.startScan() is Failed");
