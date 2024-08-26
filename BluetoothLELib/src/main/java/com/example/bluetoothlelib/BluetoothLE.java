@@ -81,12 +81,7 @@ public class BluetoothLE {
         ScanSettings.Builder scanSettings = new ScanSettings.Builder();
         scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
         ScanSettings settings = scanSettings.build();
-        if (activity != null) {
-            unityDebugMessage("activity is " + activity);
-            unityDebugMessage("activity type is " + activity.getClass().getSimpleName());
-
-        }
-//            // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
+        // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
         checkBluetoothLEPermission();
         try {
             scanner.startScan(null, settings, scanCallback);
