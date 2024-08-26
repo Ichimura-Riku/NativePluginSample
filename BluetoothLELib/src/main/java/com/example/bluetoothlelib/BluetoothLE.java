@@ -2,28 +2,27 @@ package com.example.bluetoothlelib;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
-
-import java.lang.Exception;
-
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.le.*;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
 
 import com.unity3d.player.UnityPlayer;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.UUID;
 
 public class BluetoothLE {
@@ -39,13 +38,22 @@ public class BluetoothLE {
     static final int REQUEST_CODE = 1;
     //    private Context context;
     private Activity activity;
+    private Context context;
 
     private void checkBluetoothLEPermission() {
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{
-                    Manifest.permission.CAMERA
-            }, REQUEST_CODE);
+        try {
+            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, new String[]{
+                        Manifest.permission.CAMERA
+                }, REQUEST_CODE);
+            }
+
+
+        } catch (Exception e) {
+            unityDebugMessage("permissionCheck is Failed");
+            unityDebugMessage(e.toString());
         }
+        unityDebugMessage(String.valueOf(Build.VERSION.SDK_INT));
     }
 
     // 初期化.
@@ -55,12 +63,13 @@ public class BluetoothLE {
 
             unityDebugMessage("start plugin initialize");
             activity = UnityPlayer.currentActivity;
+            context = activity.getApplicationContext();
             BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
             adapter = manager.getAdapter();
             scanner = adapter.getBluetoothLeScanner();
             unitySendMessage("InitializeCallback");
             unityDebugMessage("Finish BluetoothLE.initialize()");
-        }catch(Exception e){
+        } catch (Exception e) {
             unityDebugMessage("BluetoothLE.initialize is Failed");
             unityDebugMessage(e.toString());
         }
@@ -68,17 +77,19 @@ public class BluetoothLE {
 
     // スキャン開始.
     public void startScan() {
-        try {
 
-            ScanSettings.Builder scanSettings = new ScanSettings.Builder();
-            scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
-            ScanSettings settings = scanSettings.build();
-            if(activity != null){
-                unityDebugMessage("activity is " + activity);
-            }
+        ScanSettings.Builder scanSettings = new ScanSettings.Builder();
+        scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
+        ScanSettings settings = scanSettings.build();
+        if (activity != null) {
+            unityDebugMessage("activity is " + activity);
+            unityDebugMessage("activity type is " + activity.getClass().getSimpleName());
+
+        }
 //            // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
-            checkBluetoothLEPermission();
-//            scanner.startScan(null, settings, scanCallback);
+        checkBluetoothLEPermission();
+        try {
+            scanner.startScan(null, settings, scanCallback);
             unityDebugMessage("Finish BluetoothLE.startScan()");
         } catch (Exception e) {
             unityDebugMessage("BluetoothLE.startScan() is Failed");
