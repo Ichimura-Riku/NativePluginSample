@@ -1,5 +1,7 @@
 package com.example.bluetoothlelib;
 
+import static androidx.core.app.ActivityCompat.startActivityForResult;
+
 import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -9,15 +11,16 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
 
 import androidx.core.app.ActivityCompat;
 
@@ -39,6 +42,11 @@ public class BluetoothLE {
     //    private Context context;
     private Activity activity;
     private Context context;
+    private int REQUEST_ENABLE_BT = 1;
+    private boolean scanning;
+    private Handler handler;
+    long SCAN_PERIOD = 10000;
+
 
     private void checkBluetoothLEPermission() {
         try {
@@ -64,9 +72,18 @@ public class BluetoothLE {
             unityDebugMessage("start plugin initialize");
             activity = UnityPlayer.currentActivity;
             context = activity.getApplicationContext();
-            BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            adapter = manager.getAdapter();
+//            BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+            adapter = BluetoothAdapter.getDefaultAdapter();
+
+
+            if (adapter != null && !adapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(activity, enableBtIntent, REQUEST_ENABLE_BT, null);
+            }
             scanner = adapter.getBluetoothLeScanner();
+            scanning = false;
+            handler = new Handler();
+
             unitySendMessage("InitializeCallback");
             unityDebugMessage("Finish BluetoothLE.initialize()");
         } catch (Exception e) {
@@ -89,6 +106,35 @@ public class BluetoothLE {
         } catch (Exception e) {
             unityDebugMessage("BluetoothLE.startScan() is Failed");
             unityDebugMessage(e.toString());
+        }
+    }
+
+    public void scanLeDevice() {
+        checkBluetoothLEPermission();
+        if (scanner != null) {
+
+            if (!scanning) {
+                try {
+                    handler.postDelayed(() -> {
+                        scanning = false;
+                        scanner.stopScan((scanCallback));
+                    }, SCAN_PERIOD);
+                    scanning = true;
+                    scanner.startScan(scanCallback);
+                } catch (Exception e) {
+                    unityDebugMessage("scanning : " + scanning);
+                    unityDebugMessage(e.toString());
+                }
+            } else {
+                try {
+
+                scanning = false;
+                scanner.stopScan(scanCallback);
+                } catch (Exception e){
+                    unityDebugMessage("scanning : " + scanning);
+                    unityDebugMessage(e.toString());
+                }
+            }
         }
     }
 
