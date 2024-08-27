@@ -31,7 +31,7 @@ import java.util.UUID;
 public class BluetoothLE {
     //    private static final String RECEIVE_OBJECT_NAME = "BluetoothLEReceiver";
     private static final String RECEIVE_OBJECT_NAME = "ControllerInfoDisplayUI";
-    private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("566fd0bd-0e40-42fa-a0c2-3a54433220f8");
+    private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("994e94d2-5ef5-46a2-8423-05ecfbe06a18");
     private BluetoothAdapter adapter;
     private BluetoothLeScanner scanner;
 
