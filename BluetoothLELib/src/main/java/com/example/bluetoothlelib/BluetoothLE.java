@@ -3,6 +3,7 @@ package com.example.bluetoothlelib;
 import static androidx.core.app.ActivityCompat.startActivityForResult;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -109,30 +110,42 @@ public class BluetoothLE {
         }
     }
 
+    @SuppressLint("MissingPermission")
     public void scanLeDevice() {
-        checkBluetoothLEPermission();
+        unityDebugMessage("start BluetoothLe.scanLeDevice()");
+//        checkBluetoothLEPermission();
         if (scanner != null) {
 
             if (!scanning) {
                 try {
+                    unityDebugMessage("start BluetoothLe.scanner.startScan()");
+
                     handler.postDelayed(() -> {
                         scanning = false;
                         scanner.stopScan((scanCallback));
                     }, SCAN_PERIOD);
                     scanning = true;
                     scanner.startScan(scanCallback);
+                    unityDebugMessage("scanning -> false");
+                    unityDebugMessage("finish BluetoothLe.scanner.startScan()");
                 } catch (Exception e) {
                     unityDebugMessage("scanning : " + scanning);
-                    unityDebugMessage(e.toString());
+                    unityDebugMessage("BluetoothLe.scanner.startScan() is Failed\n" + e);
                 }
             } else {
                 try {
 
-                scanning = false;
-                scanner.stopScan(scanCallback);
-                } catch (Exception e){
+                    unityDebugMessage("start BluetoothLe.scanner.stopScan()");
+                    scanning = false;
+                    scanner.stopScan(scanCallback);
+                    unityDebugMessage("scanning -> true");
+
+                    unityDebugMessage("finish BluetoothLe.scanner.stopScan()");
+
+                } catch (Exception e) {
                     unityDebugMessage("scanning : " + scanning);
-                    unityDebugMessage(e.toString());
+                    unityDebugMessage("BluetoothLe.scanner.stopScan() is Failed\n" + e);
+
                 }
             }
         }
@@ -141,8 +154,12 @@ public class BluetoothLE {
 
     // スキャンの停止.
     public void stopScan(Context context, Activity activity) {
+        unityDebugMessage("start BluetoothLe.scanner.stopScan()");
+
         checkBluetoothLEPermission();
         scanner.stopScan(scanCallback);
+        unityDebugMessage("finish BluetoothLe.scanner.stopScan()");
+
     }
 
     // デバイス接続.
