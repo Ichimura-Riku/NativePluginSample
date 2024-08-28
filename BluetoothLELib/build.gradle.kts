@@ -34,7 +34,7 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation("no.nordicsemi.android.support.v18:scanner:1.6.0")
+    implementation(libs.scanner)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
