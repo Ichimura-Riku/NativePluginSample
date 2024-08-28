@@ -94,6 +94,24 @@ public class BluetoothLE {
             }
 //            assert adapter != null;
 //            scanner = adapter.getBluetoothLeScanner();
+            scanner = BluetoothLeScannerCompat.getScanner();
+            scanCallback = new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    unityDebugMessage("start BluetoothLE.scanCallback()");
+                    checkBluetoothLEPermission();
+
+                    // 検出したデバイス情報を通知.
+                    String deviceName = result.getDevice().getName();
+                    String address = result.getDevice().getAddress();
+                    unitySendMessage("ScanCallback", deviceName, address);
+                }
+
+                @Override
+                public void onBatchScanResults(List<ScanResult> results) {
+                    results.forEach(it -> Log.d("TAG", it.getDevice().toString()));
+                }
+            };
             settings = new ScanSettings.Builder()
                     .setLegacy(false)
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -142,11 +160,11 @@ public class BluetoothLE {
 
                     handler.postDelayed(() -> {
                         scanning = false;
-                        scanner.stopScan((scanCallback));
+                        scanner.stopScan(scanCallback);
                     }, SCAN_PERIOD);
                     scanning = true;
 //                    scanner.startScan(scanCallback); 以前のscan
-                    scanner.startScan(filters, settings, scanCallback);
+                    scanner.startScan(scanCallback);
                     unityDebugMessage("scanning -> false");
                     unityDebugMessage("finish BluetoothLe.scanner.startScan()");
                 } catch (Exception e) {
