@@ -13,39 +13,28 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.ParcelUuid;
-import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
 import com.unity3d.player.UnityPlayer;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-
-import no.nordicsemi.android.support.v18.scanner.BluetoothLeScannerCompat;
-import no.nordicsemi.android.support.v18.scanner.ScanCallback;
-import no.nordicsemi.android.support.v18.scanner.ScanFilter;
-import no.nordicsemi.android.support.v18.scanner.ScanResult;
-import no.nordicsemi.android.support.v18.scanner.ScanSettings;
 
 public class BluetoothLE {
     //    private static final String RECEIVE_OBJECT_NAME = "BluetoothLEReceiver";
     private static final String RECEIVE_OBJECT_NAME = "ControllerInfoDisplayUI";
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("994e94d2-5ef5-46a2-8423-05ecfbe06a18");
-    private final ParcelUuid mUuid = new ParcelUuid(CLIENT_CHARACTERISTIC_CONFIG);
-    private List<ScanFilter> filters = new ArrayList<>();
-    private ScanSettings settings;
-    private ScanCallback scanCallback;
-
     private BluetoothAdapter adapter;
-    private BluetoothLeScannerCompat scanner;
+    private BluetoothLeScanner scanner;
 
     private BluetoothGatt gatt;
     private BluetoothDevice device;
@@ -92,34 +81,7 @@ public class BluetoothLE {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(activity, enableBtIntent, REQUEST_ENABLE_BT, null);
             }
-//            assert adapter != null;
-//            scanner = adapter.getBluetoothLeScanner();
-            scanner = BluetoothLeScannerCompat.getScanner();
-            scanCallback = new ScanCallback() {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result) {
-                    unityDebugMessage("start BluetoothLE.scanCallback()");
-                    checkBluetoothLEPermission();
-
-                    // 検出したデバイス情報を通知.
-                    String deviceName = result.getDevice().getName();
-                    String address = result.getDevice().getAddress();
-                    unitySendMessage("ScanCallback", deviceName, address);
-                }
-
-                @Override
-                public void onBatchScanResults(List<ScanResult> results) {
-                    results.forEach(it -> Log.d("TAG", it.getDevice().toString()));
-                }
-            };
-            settings = new ScanSettings.Builder()
-                    .setLegacy(false)
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .setReportDelay(5000)
-                    .setUseHardwareBatchingIfSupported(true)
-                    .build();
-            filters.add(new ScanFilter.Builder().setServiceUuid(mUuid).build());
-
+            scanner = adapter.getBluetoothLeScanner();
             scanning = false;
             handler = new Handler();
 
@@ -140,7 +102,7 @@ public class BluetoothLE {
         // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
         checkBluetoothLEPermission();
         try {
-            scanner.startScan(filters, settings, scanCallback);
+            scanner.startScan(null, settings, scanCallback);
             unityDebugMessage("Finish BluetoothLE.startScan()");
         } catch (Exception e) {
             unityDebugMessage("BluetoothLE.startScan() is Failed");
@@ -160,10 +122,9 @@ public class BluetoothLE {
 
                     handler.postDelayed(() -> {
                         scanning = false;
-                        scanner.stopScan(scanCallback);
+                        scanner.stopScan((scanCallback));
                     }, SCAN_PERIOD);
                     scanning = true;
-//                    scanner.startScan(scanCallback); 以前のscan
                     scanner.startScan(scanCallback);
                     unityDebugMessage("scanning -> false");
                     unityDebugMessage("finish BluetoothLe.scanner.startScan()");
@@ -223,6 +184,20 @@ public class BluetoothLE {
         }
     }
 
+    private ScanCallback scanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            checkBluetoothLEPermission();
+            if (result.getDevice() == null) {
+                return;
+            }
+
+            // 検出したデバイス情報を通知.
+            String deviceName = result.getDevice().getName();
+            String address = result.getDevice().getAddress();
+            unitySendMessage("ScanCallback", deviceName, address);
+        }
+    };
 
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
