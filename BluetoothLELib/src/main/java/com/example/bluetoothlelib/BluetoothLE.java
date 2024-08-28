@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
@@ -41,6 +42,7 @@ public class BluetoothLE {
     private final ParcelUuid mUuid = new ParcelUuid(CLIENT_CHARACTERISTIC_CONFIG);
     private List<ScanFilter> filters = new ArrayList<>();
     private ScanSettings settings;
+    private ScanCallback scanCallback;
 
     private BluetoothAdapter adapter;
     private BluetoothLeScannerCompat scanner;
@@ -92,7 +94,6 @@ public class BluetoothLE {
             }
 //            assert adapter != null;
 //            scanner = adapter.getBluetoothLeScanner();
-            scanner  =BluetoothLeScannerCompat.getScanner();
             settings = new ScanSettings.Builder()
                     .setLegacy(false)
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -204,21 +205,6 @@ public class BluetoothLE {
         }
     }
 
-    private ScanCallback scanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            unityDebugMessage("start BluetoothLE.scanCallback()");
-            checkBluetoothLEPermission();
-            if (result.getDevice() == null) {
-                return;
-            }
-
-            // 検出したデバイス情報を通知.
-            String deviceName = result.getDevice().getName();
-            String address = result.getDevice().getAddress();
-            unitySendMessage("ScanCallback", deviceName, address);
-        }
-    };
 
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
