@@ -25,9 +25,11 @@ import android.os.Handler;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.unity3d.player.UnityPlayer;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class BluetoothLE {
@@ -76,11 +78,13 @@ public class BluetoothLE {
             context = activity.getApplicationContext();
 //            BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
 //            adapter = BluetoothAdapter.getDefaultAdapter();
-
             if (adapter != null && !adapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(activity, enableBtIntent, REQUEST_ENABLE_BT, null);
             }
+//            unityDebugMessage("adapter == null -> " + (adapter == null));
+//            unityDebugMessage("!adapter.isEnable -> " + !adapter.isEnabled());
+
             scanning = false;
 
             unitySendMessage("InitializeCallback");
@@ -122,7 +126,6 @@ public class BluetoothLE {
                 }, SCAN_PERIOD);
                 scanning = true;
                 new Thread(() -> bluetoothLeScanner.startScan(null, settings, scanCallback), "StartScan()").start();
-//                bluetoothLeScanner.startScan(null, settings, scanCallback);
             } else {
                 scanning = false;
                 bluetoothLeScanner.stopScan(scanCallback);
@@ -200,20 +203,22 @@ public class BluetoothLE {
     @SuppressLint("MissingPermission")
     public void connectToDevice(String address) {
         unityDebugMessage("start BluetoothLe.connectToDevice()");
-        device = adapter.getRemoteDevice(address);
+        unityDebugMessage(address.getClass().getSimpleName());
+        device = adapter.getRemoteDevice("74:4D:BD:9E:07:E1");
         if (device == null) {
             return;
         }
         if (gatt != null) {
             gatt.disconnect();
         }
-        gatt = device.connectGatt(activity, true, gattCallback);
-        unityDebugMessage("finish BluetoothLe.connectToDevice()");
+        gatt = device.connectGatt(activity, false, gattCallback, 0, 1, handler);
+//        unityDebugMessage("finish BluetoothLe.connectToDevice()");
 
     }
 
     // デバイス接続解除.
     public void disconnectDevice() {
+        unityDebugMessage("disconnectDevice()");
         checkBluetoothLEPermission();
         if (gatt != null) {
             gatt.disconnect();
@@ -234,7 +239,7 @@ public class BluetoothLE {
             // 検出したデバイス情報を通知.
             String deviceName = result.getDevice().getName();
             String address = result.getDevice().getAddress();
-//            unityDebugMessage("ScanCallback deviceName:" + deviceName + ", address:" + address);
+            unityDebugMessage("ScanCallback deviceName:" + deviceName + ", address:" + address);
             unitySendMessage("ScanCallback", deviceName, address);
         }
     };
@@ -246,9 +251,11 @@ public class BluetoothLE {
             if (state == BluetoothProfile.STATE_CONNECTED) {
                 // 接続成功.
                 unitySendMessage("ConnectCallback");
+                unityDebugMessage("ConnectCallback");
             } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                 // 接続解除.
                 unitySendMessage("DisconnectCallback");
+                unityDebugMessage("DisconnectCallback");
             }
         }
 
