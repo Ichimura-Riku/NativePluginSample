@@ -188,18 +188,18 @@ public class BluetoothLE {
 
 
     // スキャンの停止.
+    @SuppressLint("MissingPermission")
     public void stopScan() {
         unityDebugMessage("start BluetoothLe.scanner.stopScan()");
-
-        checkBluetoothLEPermission();
         bluetoothLeScanner.stopScan(scanCallback);
         unityDebugMessage("finish BluetoothLe.scanner.stopScan()");
 
     }
 
     // デバイス接続.
+    @SuppressLint("MissingPermission")
     public void connectToDevice(String address) {
-        checkBluetoothLEPermission();
+        unityDebugMessage("start BluetoothLe.connectToDevice()");
         device = adapter.getRemoteDevice(address);
         if (device == null) {
             return;
@@ -208,6 +208,8 @@ public class BluetoothLE {
             gatt.disconnect();
         }
         gatt = device.connectGatt(activity, true, gattCallback);
+        unityDebugMessage("finish BluetoothLe.connectToDevice()");
+
     }
 
     // デバイス接続解除.
@@ -236,10 +238,11 @@ public class BluetoothLE {
             unitySendMessage("ScanCallback", deviceName, address);
         }
     };
-
-    private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+    @SuppressLint("MissingPermission")
+    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int state) {
+            unityDebugMessage("gattCallback.onConnectionStateChange()");
             if (state == BluetoothProfile.STATE_CONNECTED) {
                 // 接続成功.
                 unitySendMessage("ConnectCallback");
@@ -251,6 +254,7 @@ public class BluetoothLE {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            unityDebugMessage("gattCallback.onServicesDiscovered");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // 検出したサービスとCharacteristicを通知.
                 for (BluetoothGattService service : gatt.getServices()) {
