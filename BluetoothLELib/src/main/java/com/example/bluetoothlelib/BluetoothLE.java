@@ -188,7 +188,7 @@ public class BluetoothLE {
 
 
     // スキャンの停止.
-    public void stopScan(Context context, Activity activity) {
+    public void stopScan() {
         unityDebugMessage("start BluetoothLe.scanner.stopScan()");
 
         checkBluetoothLEPermission();
