@@ -87,8 +87,8 @@ class SerialSocket extends BluetoothGattCallback {
     private int payloadSize = DEFAULT_MTU-3;
 
     SerialSocket(Context context, BluetoothDevice device) {
-//        if(context instanceof Activity)
-//            throw new InvalidParameterException("expected non UI context");
+        if(context instanceof Activity)
+            throw new InvalidParameterException("expected non UI context");
         this.context = context;
         this.device = device;
         writeBuffer = new ArrayList<>();
