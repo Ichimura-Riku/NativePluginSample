@@ -148,46 +148,6 @@ public class BluetoothLE {
 //        }
     }
 
-    @SuppressLint("MissingPermission")
-    public void scanLeDevice() {
-        unityDebugMessage("start BluetoothLe.scanLeDevice()");
-//        checkBluetoothLEPermission();
-        if (bluetoothLeScanner != null) {
-
-            if (!scanning) {
-                try {
-                    unityDebugMessage("start BluetoothLe.bluetoothLeScanner.startScan()");
-
-                    handler.postDelayed(() -> {
-                        scanning = false;
-                        bluetoothLeScanner.stopScan((scanCallback));
-                    }, SCAN_PERIOD);
-                    scanning = true;
-                    bluetoothLeScanner.startScan(scanCallback);
-                    unityDebugMessage("scanning -> false");
-                    unityDebugMessage("finish BluetoothLe.bluetoothLeScanner.startScan()");
-                } catch (Exception e) {
-                    unityDebugMessage("scanning : " + scanning);
-                    unityDebugMessage("BluetoothLe.bluetoothLeScanner.startScan() is Failed\n" + e);
-                }
-            } else {
-                try {
-
-                    unityDebugMessage("start BluetoothLe.bluetoothLeScanner.stopScan()");
-                    scanning = false;
-                    bluetoothLeScanner.stopScan(scanCallback);
-                    unityDebugMessage("scanning -> true");
-
-                    unityDebugMessage("finish BluetoothLe.bluetoothLeScanner.stopScan()");
-
-                } catch (Exception e) {
-                    unityDebugMessage("scanning : " + scanning);
-                    unityDebugMessage("BluetoothLe.bluetoothLeScanner.stopScan() is Failed\n" + e);
-
-                }
-            }
-        }
-    }
 
 
     // スキャンの停止.
