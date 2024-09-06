@@ -171,9 +171,7 @@ public class BluetoothLE {
         if (gatt != null) {
             gatt.disconnect();
         }
-//        gatt = device.connectGatt(activity, true, gattCallback, 0, 1, handler);
-        SerialSocket socket = new SerialSocket(activity, device);
-
+        gatt = device.connectGatt(activity, false, gattCallback, 0, 1, handler);
 //        unityDebugMessage("finish BluetoothLe.connectToDevice()");
 
     }
@@ -217,7 +215,7 @@ public class BluetoothLE {
             } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                 // 接続解除.
                 unitySendMessage("DisconnectCallback");
-                unityDebugMessage("DisconnectCallback" + status);
+                unityDebugMessage("DisconnectCallback");
             }
         }
 
