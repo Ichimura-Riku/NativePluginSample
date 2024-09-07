@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
@@ -48,6 +49,7 @@ public class BluetoothLE {
     private boolean scanning;
     private Handler handler = new Handler();
     long SCAN_PERIOD = 10000;
+    boolean isPassStatus133 = false;
 
 
     private void checkBluetoothLEPermission() {
@@ -146,7 +148,6 @@ public class BluetoothLE {
     }
 
 
-
     // スキャンの停止.
     @SuppressLint("MissingPermission")
     public void stopScan() {
@@ -167,7 +168,7 @@ public class BluetoothLE {
         if (gatt != null) {
             gatt.disconnect();
         }
-        gatt = device.connectGatt(activity, true, gattCallback);
+        gatt = device.connectGatt(activity, false, gattCallback, BluetoothDevice.TRANSPORT_LE); // BluetoothDevice.TRANSPORT_LE
         unityDebugMessage("finish BluetoothLe.connectToDevice()");
 
     }
@@ -194,7 +195,7 @@ public class BluetoothLE {
             // 検出したデバイス情報を通知.
             String deviceName = result.getDevice().getName();
             String address = result.getDevice().getAddress();
-//            unityDebugMessage("ScanCallback deviceName:" + deviceName + ", address:" + address);
+            unityDebugMessage("ScanCallback deviceName:" + deviceName + ", address:" + address);
             unitySendMessage("ScanCallback", deviceName, address);
         }
     };
@@ -202,13 +203,35 @@ public class BluetoothLE {
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int state) {
-            unityDebugMessage("gattCallback.onConnectionStateChange()");
+            if (gatt.requestMtu(512)) {
+                unityDebugMessage("Requested MTU successfully");
+            } else {
+                unityDebugMessage("Failed to request MTU");
+            }
+
+            if (!isPassStatus133) {
+                unityDebugMessage("gattCallback.onConnectionStateChange()");
+
+            }
             if (state == BluetoothProfile.STATE_CONNECTED) {
                 // 接続成功.
+
                 unitySendMessage("ConnectCallback");
             } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                 // 接続解除.
-                unitySendMessage("DisconnectCallback");
+                if (status == 133) {
+                    if (!isPassStatus133) {
+
+                        unityDebugMessage("133");
+                        isPassStatus133 = true;
+                    }
+                    device.connectGatt(activity, false, gattCallback);
+                } else {
+                    unityDebugMessage("" + status);
+                    unitySendMessage("DisconnectCallback");
+                }
+//                unityDebugMessage("" + status);
+//                unitySendMessage("DisconnectCallback");
             }
         }
 
