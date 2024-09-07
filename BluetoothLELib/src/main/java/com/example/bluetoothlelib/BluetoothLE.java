@@ -250,8 +250,9 @@ public class BluetoothLE {
     };
 
     // サービスを検出.
+    @SuppressLint("MissingPermission")
     public void discoverServices() {
-        checkBluetoothLEPermission();
+        unityDebugMessage("discoverService");
         gatt.discoverServices();
     }
 
