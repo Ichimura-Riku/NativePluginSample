@@ -52,21 +52,21 @@ public class BluetoothLE {
     boolean isPassStatus133 = false;
 
 
-    private void checkBluetoothLEPermission() {
-        try {
-            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(activity, new String[]{
-                        Manifest.permission.CAMERA
-                }, REQUEST_CODE);
-            }
-
-
-        } catch (Exception e) {
-            unityDebugMessage("permissionCheck is Failed");
-            unityDebugMessage(e.toString());
-        }
-        unityDebugMessage(String.valueOf(Build.VERSION.SDK_INT));
-    }
+//    private void checkBluetoothLEPermission() {
+//        try {
+//            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(activity, new String[]{
+//                        Manifest.permission.CAMERA
+//                }, REQUEST_CODE);
+//            }
+//
+//
+//        } catch (Exception e) {
+//            unityDebugMessage("permissionCheck is Failed");
+//            unityDebugMessage(e.toString());
+//        }
+//        unityDebugMessage(String.valueOf(Build.VERSION.SDK_INT));
+//    }
 
     // 初期化.
     public void initialize() {
@@ -174,8 +174,8 @@ public class BluetoothLE {
     }
 
     // デバイス接続解除.
+    @SuppressLint("MissingPermission")
     public void disconnectDevice() {
-        checkBluetoothLEPermission();
         if (gatt != null) {
             gatt.disconnect();
             gatt = null;
@@ -257,8 +257,8 @@ public class BluetoothLE {
     }
 
     // Characteristicに対してNotificationの受信を要求.
+    @SuppressLint("MissingPermission")
     public void requestNotification(String serviceUUID, String notificationUUID) {
-        checkBluetoothLEPermission();
         BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
         BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(notificationUUID));
 
@@ -279,8 +279,8 @@ public class BluetoothLE {
     }
 
     // メッセージ送信.
+    @SuppressLint("MissingPermission")
     public boolean sendMessage(String serviceUUID, String writeCharacteristicUUID, String message) {
-        checkBluetoothLEPermission();
         try {
             byte[] bytes = message.getBytes("UTF-8");
             // 書き込み.
