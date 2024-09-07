@@ -242,6 +242,7 @@ public class BluetoothLE {
                 // 検出したサービスとCharacteristicを通知.
                 for (BluetoothGattService service : gatt.getServices()) {
                     for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                        unityDebugMessage(service.getUuid().toString() + characteristic.getUuid().toString());
                         unitySendMessage("DiscoverCharacteristicCallback", service.getUuid().toString(), characteristic.getUuid().toString());
                     }
                 }
@@ -252,8 +253,20 @@ public class BluetoothLE {
     // サービスを検出.
     @SuppressLint("MissingPermission")
     public void discoverServices() {
-        unityDebugMessage("discoverService");
-        gatt.discoverServices();
+//        unityDebugMessage("discoverService");
+        try {
+
+            Thread.sleep(1000); // 10秒(1万ミリ秒)間だけ処理を止める
+        } catch (Exception e) {
+            unityDebugMessage(e.toString());
+        }
+        if (gatt.discoverServices()) {
+            unityDebugMessage("discoverService success");
+            unityDebugMessage(gatt.getDevice().getName());
+        } else {
+            unityDebugMessage("discoverService is failed");
+        }
+
     }
 
     // Characteristicに対してNotificationの受信を要求.
