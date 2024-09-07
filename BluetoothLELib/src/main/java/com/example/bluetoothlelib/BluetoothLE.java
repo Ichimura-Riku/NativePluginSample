@@ -22,7 +22,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 import com.unity3d.player.UnityPlayer;
@@ -33,8 +35,8 @@ public class BluetoothLE {
     //    private static final String RECEIVE_OBJECT_NAME = "BluetoothLEReceiver";
     private static final String RECEIVE_OBJECT_NAME = "ControllerInfoDisplayUI";
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("994e94d2-5ef5-46a2-8423-05ecfbe06a18");
-    private BluetoothAdapter adapter;
-    private BluetoothLeScanner scanner;
+    final private BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    private BluetoothLeScanner bluetoothLeScanner = adapter.getBluetoothLeScanner();
 
     private BluetoothGatt gatt;
     private BluetoothDevice device;
@@ -45,8 +47,9 @@ public class BluetoothLE {
     private Context context;
     private int REQUEST_ENABLE_BT = 1;
     private boolean scanning;
-    private Handler handler;
+    private Handler handler = new Handler();
     long SCAN_PERIOD = 10000;
+    boolean isPassStatus133 = false;
 
 
     private void checkBluetoothLEPermission() {
@@ -74,16 +77,13 @@ public class BluetoothLE {
             activity = UnityPlayer.currentActivity;
             context = activity.getApplicationContext();
 //            BluetoothManager manager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
-            adapter = BluetoothAdapter.getDefaultAdapter();
-
+//            adapter = BluetoothAdapter.getDefaultAdapter();
 
             if (adapter != null && !adapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(activity, enableBtIntent, REQUEST_ENABLE_BT, null);
             }
-            scanner = adapter.getBluetoothLeScanner();
             scanning = false;
-            handler = new Handler();
 
             unitySendMessage("InitializeCallback");
             unityDebugMessage("Finish BluetoothLE.initialize()");
@@ -94,77 +94,73 @@ public class BluetoothLE {
     }
 
     // スキャン開始.
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    @SuppressLint("MissingPermission")
     public void startScan() {
 
         ScanSettings.Builder scanSettings = new ScanSettings.Builder();
         scanSettings.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
         ScanSettings settings = scanSettings.build();
-        // NOTE: Target Android9 API28まではマニフェスト追加のみで動作 Android10以降はユーザー許可が必要.
-        checkBluetoothLEPermission();
+
+
+//        unityDebugMessage("permissionCheck"
+//                + activity.checkSelfPermission("android.permission.BLUETOOTH_CONNECT") + ", "
+//                + activity.checkSelfPermission("android.permission.BLUETOOTH_SCAN") + ", "
+//                + activity.checkSelfPermission("android.permission.BLUETOOTH_ADVERTISE") + ", "
+//                + activity.checkSelfPermission("android.permission.BLUETOOTH_ADMIN") + ", "
+//                + activity.checkSelfPermission("android.permission.ACCESS_BACKGROUND_LOCATION") + ", "
+//                + activity.checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION") + ", "
+//                + activity.checkSelfPermission("android.permission.ACCESS_FINE_LOCATION") + ", "
+//        );
+
+
         try {
-            scanner.startScan(null, settings, scanCallback);
+
+            if (!scanning) {
+                handler.postDelayed(() -> {
+                    unityDebugMessage("scanTimeout");
+                    scanning = false;
+                    bluetoothLeScanner.stopScan(scanCallback);
+                }, SCAN_PERIOD);
+                scanning = true;
+                new Thread(() -> bluetoothLeScanner.startScan(null, settings, scanCallback), "StartScan()").start();
+//                bluetoothLeScanner.startScan(null, settings, scanCallback);
+            } else {
+                scanning = false;
+                bluetoothLeScanner.stopScan(scanCallback);
+            }
+
             unityDebugMessage("Finish BluetoothLE.startScan()");
+
+
         } catch (Exception e) {
             unityDebugMessage("BluetoothLE.startScan() is Failed");
             unityDebugMessage(e.toString());
         }
-    }
 
-    @SuppressLint("MissingPermission")
-    public void scanLeDevice() {
-        unityDebugMessage("start BluetoothLe.scanLeDevice()");
-//        checkBluetoothLEPermission();
-        if (scanner != null) {
-
-            if (!scanning) {
-                try {
-                    unityDebugMessage("start BluetoothLe.scanner.startScan()");
-
-                    handler.postDelayed(() -> {
-                        scanning = false;
-                        scanner.stopScan((scanCallback));
-                    }, SCAN_PERIOD);
-                    scanning = true;
-                    scanner.startScan(scanCallback);
-                    unityDebugMessage("scanning -> false");
-                    unityDebugMessage("finish BluetoothLe.scanner.startScan()");
-                } catch (Exception e) {
-                    unityDebugMessage("scanning : " + scanning);
-                    unityDebugMessage("BluetoothLe.scanner.startScan() is Failed\n" + e);
-                }
-            } else {
-                try {
-
-                    unityDebugMessage("start BluetoothLe.scanner.stopScan()");
-                    scanning = false;
-                    scanner.stopScan(scanCallback);
-                    unityDebugMessage("scanning -> true");
-
-                    unityDebugMessage("finish BluetoothLe.scanner.stopScan()");
-
-                } catch (Exception e) {
-                    unityDebugMessage("scanning : " + scanning);
-                    unityDebugMessage("BluetoothLe.scanner.stopScan() is Failed\n" + e);
-
-                }
-            }
-        }
+//        try {
+//            bluetoothLeScanner.startScan(null, settings, scanCallback);
+//            unityDebugMessage("Finish BluetoothLE.startScan()");
+//        } catch (Exception e) {
+//            unityDebugMessage("BluetoothLE.startScan() is Failed");
+//            unityDebugMessage(e.toString());
+//        }
     }
 
 
     // スキャンの停止.
-    public void stopScan(Context context, Activity activity) {
+    @SuppressLint("MissingPermission")
+    public void stopScan() {
         unityDebugMessage("start BluetoothLe.scanner.stopScan()");
-
-        checkBluetoothLEPermission();
-        scanner.stopScan(scanCallback);
+        bluetoothLeScanner.stopScan(scanCallback);
         unityDebugMessage("finish BluetoothLe.scanner.stopScan()");
 
     }
 
     // デバイス接続.
+    @SuppressLint("MissingPermission")
     public void connectToDevice(String address) {
-        checkBluetoothLEPermission();
+        unityDebugMessage("start BluetoothLe.connectToDevice()");
         device = adapter.getRemoteDevice(address);
         if (device == null) {
             return;
@@ -172,7 +168,9 @@ public class BluetoothLE {
         if (gatt != null) {
             gatt.disconnect();
         }
-        gatt = device.connectGatt(UnityPlayer.currentActivity, true, gattCallback);
+        gatt = device.connectGatt(activity, false, gattCallback, BluetoothDevice.TRANSPORT_LE); // BluetoothDevice.TRANSPORT_LE
+        unityDebugMessage("finish BluetoothLe.connectToDevice()");
+
     }
 
     // デバイス接続解除.
@@ -184,10 +182,12 @@ public class BluetoothLE {
         }
     }
 
+
+    @SuppressLint("MissingPermission")
     private ScanCallback scanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            checkBluetoothLEPermission();
+//            unitySendMessage("start scanCallback()");
             if (result.getDevice() == null) {
                 return;
             }
@@ -195,24 +195,49 @@ public class BluetoothLE {
             // 検出したデバイス情報を通知.
             String deviceName = result.getDevice().getName();
             String address = result.getDevice().getAddress();
+            unityDebugMessage("ScanCallback deviceName:" + deviceName + ", address:" + address);
             unitySendMessage("ScanCallback", deviceName, address);
         }
     };
-
-    private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+    @SuppressLint("MissingPermission")
+    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int state) {
+            if (gatt.requestMtu(512)) {
+                unityDebugMessage("Requested MTU successfully");
+            } else {
+                unityDebugMessage("Failed to request MTU");
+            }
+
+            if (!isPassStatus133) {
+                unityDebugMessage("gattCallback.onConnectionStateChange()");
+
+            }
             if (state == BluetoothProfile.STATE_CONNECTED) {
                 // 接続成功.
+
                 unitySendMessage("ConnectCallback");
             } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                 // 接続解除.
-                unitySendMessage("DisconnectCallback");
+                if (status == 133) {
+                    if (!isPassStatus133) {
+
+                        unityDebugMessage("133");
+                        isPassStatus133 = true;
+                    }
+                    device.connectGatt(activity, false, gattCallback);
+                } else {
+                    unityDebugMessage("" + status);
+                    unitySendMessage("DisconnectCallback");
+                }
+//                unityDebugMessage("" + status);
+//                unitySendMessage("DisconnectCallback");
             }
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            unityDebugMessage("gattCallback.onServicesDiscovered");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // 検出したサービスとCharacteristicを通知.
                 for (BluetoothGattService service : gatt.getServices()) {
