@@ -254,14 +254,14 @@ public class BluetoothLE {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             unityDebugMessage("onCharacteristicChanged");
             byte[] data = characteristic.getValue();
-//            StringBuilder receiveData = new StringBuilder();
+            StringBuilder receiveData = new StringBuilder();
 
             // 必要であればデータの処理を行う
             for (byte i : data){
-//                receiveData.append(String.valueOf(i));
-                unityDebugMessage(String.valueOf(i));
+                receiveData.append(String.valueOf(i));
+//                unityDebugMessage(String.valueOf(i));
             }
-//            unityDebugMessage(receiveData + "\n");
+            unityDebugMessage(receiveData + "\n");
         }
     };
 
