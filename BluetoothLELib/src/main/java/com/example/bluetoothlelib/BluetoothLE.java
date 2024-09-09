@@ -277,8 +277,9 @@ public class BluetoothLE {
 
         gatt.setCharacteristicNotification(characteristic, true);
         BluetoothGattDescriptor notification_descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG);
-        notification_descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+//        notification_descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         gatt.writeDescriptor(notification_descriptor);
+        unityDebugMessage("finish requestNotification");
     }
 
     // Unity側にメッセージ通知.
