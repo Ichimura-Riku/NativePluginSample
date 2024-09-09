@@ -261,7 +261,8 @@ public class BluetoothLE {
                 receiveData.append(String.valueOf(i));
 //                unityDebugMessage(String.valueOf(i));
             }
-            unityDebugMessage(receiveData + "\n");
+//            unityDebugMessage(receiveData + "\n");
+            unitySendMessage("onCharacteristicChanged", receiveData + "\n");
         }
     };
 
