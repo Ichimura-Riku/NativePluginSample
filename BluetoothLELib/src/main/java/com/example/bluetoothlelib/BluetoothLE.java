@@ -29,6 +29,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.unity3d.player.UnityPlayer;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class BluetoothLE {
@@ -52,21 +53,21 @@ public class BluetoothLE {
     boolean isPassStatus133 = false;
 
 
-    private void checkBluetoothLEPermission() {
-        try {
-            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(activity, new String[]{
-                        Manifest.permission.CAMERA
-                }, REQUEST_CODE);
-            }
-
-
-        } catch (Exception e) {
-            unityDebugMessage("permissionCheck is Failed");
-            unityDebugMessage(e.toString());
-        }
-        unityDebugMessage(String.valueOf(Build.VERSION.SDK_INT));
-    }
+//    private void checkBluetoothLEPermission() {
+//        try {
+//            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(activity, new String[]{
+//                        Manifest.permission.CAMERA
+//                }, REQUEST_CODE);
+//            }
+//
+//
+//        } catch (Exception e) {
+//            unityDebugMessage("permissionCheck is Failed");
+//            unityDebugMessage(e.toString());
+//        }
+//        unityDebugMessage(String.valueOf(Build.VERSION.SDK_INT));
+//    }
 
     // 初期化.
     public void initialize() {
@@ -174,8 +175,8 @@ public class BluetoothLE {
     }
 
     // デバイス接続解除.
+    @SuppressLint("MissingPermission")
     public void disconnectDevice() {
-        checkBluetoothLEPermission();
         if (gatt != null) {
             gatt.disconnect();
             gatt = null;
@@ -242,29 +243,58 @@ public class BluetoothLE {
                 // 検出したサービスとCharacteristicを通知.
                 for (BluetoothGattService service : gatt.getServices()) {
                     for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+//                        unityDebugMessage(service.getUuid().toString() + characteristic.getUuid().toString());
                         unitySendMessage("DiscoverCharacteristicCallback", service.getUuid().toString(), characteristic.getUuid().toString());
                     }
                 }
             }
         }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            unityDebugMessage("onCharacteristicChanged");
+            byte[] data = characteristic.getValue();
+//            StringBuilder receiveData = new StringBuilder();
+
+            // 必要であればデータの処理を行う
+            for (byte i : data){
+//                receiveData.append(String.valueOf(i));
+                unityDebugMessage(String.valueOf(i));
+            }
+//            unityDebugMessage(receiveData + "\n");
+        }
     };
 
     // サービスを検出.
+    @SuppressLint("MissingPermission")
     public void discoverServices() {
-        checkBluetoothLEPermission();
-        gatt.discoverServices();
+//        unityDebugMessage("discoverService");
+        try {
+
+            Thread.sleep(1000); // 10秒(1万ミリ秒)間だけ処理を止める
+        } catch (Exception e) {
+            unityDebugMessage(e.toString());
+        }
+        if (gatt.discoverServices()) {
+            unityDebugMessage("discoverService success");
+//            unityDebugMessage(gatt.getDevice().getName());
+        } else {
+            unityDebugMessage("discoverService is failed");
+        }
+
     }
 
     // Characteristicに対してNotificationの受信を要求.
+    @SuppressLint("MissingPermission")
     public void requestNotification(String serviceUUID, String notificationUUID) {
-        checkBluetoothLEPermission();
+
         BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
         BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(notificationUUID));
-
         gatt.setCharacteristicNotification(characteristic, true);
         BluetoothGattDescriptor notification_descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG);
-        notification_descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+//        notification_descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         gatt.writeDescriptor(notification_descriptor);
+        unityDebugMessage("finish requestNotification");
     }
 
     // Unity側にメッセージ通知.
@@ -278,8 +308,8 @@ public class BluetoothLE {
     }
 
     // メッセージ送信.
+    @SuppressLint("MissingPermission")
     public boolean sendMessage(String serviceUUID, String writeCharacteristicUUID, String message) {
-        checkBluetoothLEPermission();
         try {
             byte[] bytes = message.getBytes("UTF-8");
             // 書き込み.
