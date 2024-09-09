@@ -29,6 +29,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.unity3d.player.UnityPlayer;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class BluetoothLE {
@@ -242,11 +243,25 @@ public class BluetoothLE {
                 // 検出したサービスとCharacteristicを通知.
                 for (BluetoothGattService service : gatt.getServices()) {
                     for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                        unityDebugMessage(service.getUuid().toString() + characteristic.getUuid().toString());
+//                        unityDebugMessage(service.getUuid().toString() + characteristic.getUuid().toString());
                         unitySendMessage("DiscoverCharacteristicCallback", service.getUuid().toString(), characteristic.getUuid().toString());
                     }
                 }
             }
+        }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            unityDebugMessage("onCharacteristicChanged");
+            byte[] data = characteristic.getValue();
+//            StringBuilder receiveData = new StringBuilder();
+
+            // 必要であればデータの処理を行う
+            for (byte i : data){
+//                receiveData.append(String.valueOf(i));
+                unityDebugMessage(String.valueOf(i));
+            }
+//            unityDebugMessage(receiveData + "\n");
         }
     };
 
@@ -262,7 +277,7 @@ public class BluetoothLE {
         }
         if (gatt.discoverServices()) {
             unityDebugMessage("discoverService success");
-            unityDebugMessage(gatt.getDevice().getName());
+//            unityDebugMessage(gatt.getDevice().getName());
         } else {
             unityDebugMessage("discoverService is failed");
         }
@@ -272,9 +287,9 @@ public class BluetoothLE {
     // Characteristicに対してNotificationの受信を要求.
     @SuppressLint("MissingPermission")
     public void requestNotification(String serviceUUID, String notificationUUID) {
+
         BluetoothGattService service = gatt.getService(UUID.fromString(serviceUUID));
         BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID.fromString(notificationUUID));
-
         gatt.setCharacteristicNotification(characteristic, true);
         BluetoothGattDescriptor notification_descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG);
 //        notification_descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
