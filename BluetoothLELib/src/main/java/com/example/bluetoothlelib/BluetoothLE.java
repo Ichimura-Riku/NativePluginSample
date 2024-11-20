@@ -36,7 +36,7 @@ import java.util.UUID;
 public class BluetoothLE {
     //    private static final String RECEIVE_OBJECT_NAME = "BluetoothLEReceiver";
     private static final String RECEIVE_OBJECT_NAME = "ControllerInfoDisplayUI";
-//    private static final String RECEIVE_OBJECT_NAME = "GameObject";
+    //    private static final String RECEIVE_OBJECT_NAME = "GameObject";
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("994e94d2-5ef5-46a2-8423-05ecfbe06a18");
     final private BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothLeScanner bluetoothLeScanner = adapter.getBluetoothLeScanner();
@@ -261,7 +261,7 @@ public class BluetoothLE {
             StringBuilder receiveData = new StringBuilder();
 
             // 必要であればデータの処理を行う
-            for (byte i : data){
+            for (byte i : data) {
 //                unityDebugMessage(new String(i));
                 receiveData.append(String.valueOf(i));
 //                unityDebugMessage(String.valueOf(i));
@@ -325,14 +325,18 @@ public class BluetoothLE {
 //    }
 
 
-            // Unity側にメッセージ通知.
+    // Unity側にメッセージ通知.
     private void unitySendMessage(String... params) {
         String param = String.join(",", params);
-        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginMessageBU", param);
+//        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginMessageBU", param);
+//        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginMessage", param);
+        UnityPlayer.UnitySendMessage("GameObject", "ProviderLog", param);
     }
 
     private void unityDebugMessage(String message) {
-        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginLog", message);
+//        UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginLog", message);
+        UnityPlayer.UnitySendMessage("GameObject", "ProviderLog", message);
+
     }
 
     // メッセージ送信.
