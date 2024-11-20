@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
@@ -35,6 +36,7 @@ import java.util.UUID;
 public class BluetoothLE {
     //    private static final String RECEIVE_OBJECT_NAME = "BluetoothLEReceiver";
     private static final String RECEIVE_OBJECT_NAME = "ControllerInfoDisplayUI";
+//    private static final String RECEIVE_OBJECT_NAME = "GameObject";
     private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("994e94d2-5ef5-46a2-8423-05ecfbe06a18");
     final private BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothLeScanner bluetoothLeScanner = adapter.getBluetoothLeScanner();
@@ -49,8 +51,9 @@ public class BluetoothLE {
     private int REQUEST_ENABLE_BT = 1;
     private boolean scanning;
     private Handler handler = new Handler();
-    long SCAN_PERIOD = 10000;
+    long SCAN_PERIOD = 20000;
     boolean isPassStatus133 = false;
+    boolean gattConnected = false;
 
 
 //    private void checkBluetoothLEPermission() {
@@ -241,6 +244,7 @@ public class BluetoothLE {
             unityDebugMessage("gattCallback.onServicesDiscovered");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // 検出したサービスとCharacteristicを通知.
+                gattConnected = true;
                 for (BluetoothGattService service : gatt.getServices()) {
                     for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
 //                        unityDebugMessage(service.getUuid().toString() + characteristic.getUuid().toString());
@@ -274,7 +278,7 @@ public class BluetoothLE {
 //        unityDebugMessage("discoverService");
         try {
 
-            Thread.sleep(1000); // 10秒(1万ミリ秒)間だけ処理を止める
+            Thread.sleep(600); // 10秒(1万ミリ秒)間だけ処理を止める
         } catch (Exception e) {
             unityDebugMessage(e.toString());
         }
@@ -300,7 +304,28 @@ public class BluetoothLE {
         unityDebugMessage("finish requestNotification");
     }
 
-    // Unity側にメッセージ通知.
+    // discoverに関する対応の一つだったけど、ビルドできない原因の疑惑があるので一旦コメントアウト
+
+//    @SuppressLint("MissingPermission")
+//    private void discoverServices() {
+//        if (!gattConnected) { //just a boolean
+//            new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    gatt.discoverServices();
+//                }
+//            });
+//            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    discoverServices();
+//                }
+//            }, 5000);
+//        }
+//    }
+
+
+            // Unity側にメッセージ通知.
     private void unitySendMessage(String... params) {
         String param = String.join(",", params);
         UnityPlayer.UnitySendMessage(RECEIVE_OBJECT_NAME, "PluginMessageBU", param);
